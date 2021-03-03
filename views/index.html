@@ -5,29 +5,31 @@
     <title>URL Shortener</title>
     <link rel="icon" type="image/png" href="../public/favicon.ico" />
     <link href="./public/style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   </head>
 
   <body>
-    <h1>URL Shortener Microservice</h1>
-    <main>
-      <section>
-        <form action="api/shorturl/new" method="POST">
-          <fieldset>
-            <legend>URL Shortener</legend>
-            <label for="url_input">URL:</label>
-            <input
+    <div class="container">
+      <h1>URL Shortener</h1>
+      <main>
+        <section>
+          <form action="/index.js" method="POST" class="my-4 form-inline">
+            <fieldset>
+              <legend>URL Shortener</legend>
+              <label for="url_input" class="sr-only">URL:</label>
+              <input
               id="url_input"
               type="text"
               name="url"
               placeholder="https://www.freecodecamp.org/"
-            />
-            <input type="submit" value="POST URL" />
-          </fieldset>
-        </form>
-      </section>
-    </main>
-    <footer>
-      <p>By <a href="https://www.freecodecamp.org/">freeCodeCamp</a></p>
-    </footer>
+              class="form-control col mr-2"
+              />
+              <input type="submit" value="POST URL" class="btn btn-success"/>
+            </fieldset>
+          </form>
+        </section>
+      </main>
+    </div>
   </body>
 </html>
+    

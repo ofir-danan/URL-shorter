@@ -1,16 +1,7 @@
 const axios = require("axios");
-const { isValid } = require("shortid");
-const shortid = require("shortid");
 const BIN_URL = "https://api.jsonbin.io/b/603fb1b30866664b1087fd97";
 
 class DataBase {
-  constructor(fullUrl) {
-    this.originalUrl = fullUrl;
-    this.shorturlId = shortid.generate();
-    this.creationDate = new Date().toISOString().slice(0, 19).replace("T", " ");
-    this.redirectCount = 0;
-  }
-
   getBin() {
     return axios.get(`${BIN_URL}/latest`).then((res) => {
       return res.data;
@@ -24,7 +15,7 @@ class DataBase {
       .catch((err) => console.error(err));
   }
 
-  static existBin(url, bin) {
+  existBin(url, bin) {
     return axios.get(`${BIN_URL}/latest`).then((res) => {
       if (isArrayContains(url, bin)) {
         return true;

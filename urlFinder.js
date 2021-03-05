@@ -1,5 +1,5 @@
-const returnProperty = function (value, array) {
-  const isTheSame = array.find(function (item, index) {
+const returnProperty = (value, array) => {
+  const isTheSame = array.find((item, index) => {
     if (item.originalUrl == value) {
       return item;
     } else {

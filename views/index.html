@@ -33,24 +33,39 @@
           </form>
         </section>
       </main>
-      <div id="shortenerURL"></div>
+      <div> New Url :  <a id="shortenerURL"></a></div>
+      <div> Full Url :  <a id="fullURL"></a></div>
     </div>
     <script>
+      const shortOutput = document.getElementById("shortenerURL");
+      const fullOutput = document.getElementById("fullURL");
       function onSubmit(e) {
         e.preventDefault();
         const url = document.getElementById("url_input").value;
-        const outputDiv = document.getElementById("shortenerURL");
         fetch("http://localhost:3000/api/shorturl/new", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url }),
         })
           .then((res) => {
-            console.log(res)
             return res.json();
           })
-          .then((value) => (outputDiv.innerText = JSON.stringify(value)))
-          .catch((err) => (outputDiv.innerText = err));
+          .then((value) => {
+            shortOutput.setAttribute(
+              "href",
+              `http://localhost:3000/${value.shorturlId}`
+            );
+            shortOutput.innerText = "http://localhost:3000/" + value.shorturlId;
+            if (value.originalUrl.includes("https://")) {
+              fullOutput.setAttribute("href", value.originalUrl);
+            } else if (value.originalUrl.includes("http://")) {
+              fullOutput.setAttribute("href", value.originalUrl);
+            } else {
+              fullOutput.setAttribute("href", `http://${value.originalUrl}`);
+            }
+            fullOutput.innerText = value.originalUrl;
+          })
+          .catch((err) => (shortOutput.innerText = err));
       }
     </script>
   </body>

@@ -30,6 +30,8 @@ const isArrayContains = function (value, array) {
   const isTheSame = array.find(function (item, index) {
     if (item.originalUrl == value) {
       return true;
+    } else if (item.shorturlId == value) {
+      return true;
     } else {
       return false;
     }

@@ -46,8 +46,28 @@ app.post("/api/shorturl/new/", (req, res) => {
   });
 });
 
-// app.get("/api/shorturl/new", (req, res) => {
-//   res.sendFile(__dirname + "/views/index.html");
-// });
+app.get("/:shortUrl", (req, res) => {
+  const { shortUrl } = req.params;
+  DB.getBin().then((bin) => {
+    let result = [bin];
+    let binContent = result.flat(2);
+    DB.existBin(shortUrl, binContent).then((exist) => {
+      if (!exist) {
+        res.send("Shortener URL not exist");
+      } else {
+        let urlExist = returnProperty(shortUrl, binContent);
+        console.log("already exist");
+        console.log(typeof urlExist.originalUrl);
+        if (urlExist.originalUrl.includes("https://")) {
+          return res.redirect(urlExist.originalUrl);
+        } else if (urlExist.originalUrl.includes("http://")) {
+          return res.redirect(urlExist.originalUrl);
+        } else {
+          return res.redirect(`http://${urlExist.originalUrl}`);
+        }
+      }
+    });
+  });
+});
 
 module.exports = app;

@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 const request = require("supertest");
-const app = require("./app");
-const DataBase = require("./database");
+const app = require("../app");
+const DataBase = require("../database");
 const DB = new DataBase();
 const expectedJSON = {
   originalUrl: "http://www.github.com",
@@ -31,7 +31,7 @@ describe("POST route", () => {
     // Is the status code 200
     expect(response.status).toBe(200);
 
-    // are tasks equal
+    // Is Json created properly
     expect(response.body).toEqual(expectedJSON);
   });
 
@@ -40,10 +40,10 @@ describe("POST route", () => {
       .post("/api/shorturl/new/")
       .send(notRealURL);
     expect.assertions(2);
-    // Is the status code 200
+    // Is the status code 401
     expect(response.status).toBe(401);
 
-    // are tasks equal
+    // Is the error massage the same
     expect(response.body).toEqual("URL is not valid");
   });
 });
@@ -53,14 +53,14 @@ describe("Statistic route", () => {
     expectedJSON.redirectCount = 4;
     await DB.putBin([expectedJSON]);
     const response = await request(app).get("/api/statistic/vnFthnWBJ");
-    // are tasks equal
+    // are statistic equal after they changed
     expect(response.body).toEqual(expectedJSON);
   });
 
   it("Should return an error", async () => {
     const response = await request(app).get("/api/statistic/1234");
     expect.assertions(2);
-    // are tasks equal
+    // Is invalid short URL throws error
     expect(response.status).toBe(404);
     expect(response.body).toBe("Shortener URL does not exist");
   });
@@ -69,14 +69,14 @@ describe("Statistic route", () => {
 describe("Redirect", () => {
   it("Should redirect to the wanted page", async () => {
     const response = await request(app).get("/vnFthnWBJ");
-    // are tasks equal
+    // Is redirect works
     expect(response.headers.location).toBe(expectedURL.url);
   });
 
   it("Should return an error", async () => {
     const response = await request(app).get("/1234");
     expect.assertions(2);
-    // are tasks equal
+    // Is invalid short URL throws error
     expect(response.status).toBe(404);
     expect(response.body).toBe("Shortener URL does not exist");
   });

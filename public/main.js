@@ -4,7 +4,13 @@ const creationDate = document.getElementById("creationDate");
 const fullUrl = document.getElementById("urlBeforeChange");
 const newUrl = document.getElementById("newUrl");
 const modalOutput = document.getElementById("modal-output");
+const video = document.getElementById("video");
 const modalSpinner = document.querySelectorAll(".lds-ripple")[1];
+
+// auto play the background video
+window.addEventListener("load", () => {
+  video.autoplay;
+});
 
 // Get the modal
 const modal = document.getElementById("myModal");
@@ -12,7 +18,7 @@ const modal = document.getElementById("myModal");
 // Get the <span> element that closes the modal
 const span = document.getElementsByClassName("close")[0];
 
-// When the user clicks on the button, open the modal
+// When the user clicks on the button, open the modal of statistic
 statistic.onclick = function () {
   modal.style.display = "block";
   modalSpinner.style.display = "inline-block";

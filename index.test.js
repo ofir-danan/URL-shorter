@@ -1,45 +1,83 @@
+/**
+ * @jest-environment node
+ */
 const request = require("supertest");
-const app = require("./index");
+const app = require("./app");
+const DataBase = require("./database");
+const DB = new DataBase();
+const expectedJSON = {
+  originalUrl: "http://www.github.com",
+  shorturlId: "vnFthnWBJ",
+  creationDate: "2021-03-07 10:39:11",
+  redirectCount: 0,
+};
+const expectedURL = {
+  url: "http://www.github.com",
+};
+const notRealURL = {
+  url: "www.facebokde.com",
+};
 
-describe("GET route", () => {
-  const expectedURL = {
-    originalUrl: "http://www.github.com",
-    shorturlId: "vnFthnWBJ",
-    creationDate: "2021-03-07 10:39:11",
-    redirectCount: 0,
-  };
+beforeEach(async () => {
+  await DB.putBin([expectedJSON]);
+});
 
-  const expectedError = {
-    message: "Something want wrong with your request",
-  };
-
-  it("Should return a task by a given id", async () => {
-    const response = await request(app).get("/b/1614101194861");
+describe("POST route", () => {
+  it("Should return the same shortURL every time", async () => {
+    const response = await request(app)
+      .post("/api/shorturl/new/")
+      .send(expectedURL);
     expect.assertions(2);
     // Is the status code 200
     expect(response.status).toBe(200);
 
     // are tasks equal
-    expect(response.body.record).toEqual(expectedTask);
+    expect(response.body).toEqual(expectedJSON);
   });
 
-  it("Should return an error message with status code 400 for illegal id", async () => {
-    const response = await request(app).get("/b/aba");
+  it("Should return error", async () => {
+    const response = await request(app)
+      .post("/api/shorturl/new/")
+      .send(notRealURL);
+    expect.assertions(2);
+    // Is the status code 200
+    expect(response.status).toBe(401);
 
-    // Is the status code 400
-    expect(response.status).toBe(400);
+    // are tasks equal
+    expect(response.body).toEqual("URL is not valid");
+  });
+});
 
-    // Is the body equal expectedQuote
-    expect(response.body["message"]).toBe("Illegal ID");
+describe("Statistic route", () => {
+  it("Should show the right statistic", async () => {
+    expectedJSON.redirectCount = 4;
+    await DB.putBin([expectedJSON]);
+    const response = await request(app).get("/api/statistic/vnFthnWBJ");
+    // are tasks equal
+    expect(response.body).toEqual(expectedJSON);
   });
 
-  it("Should return an error message with status code 404 for not found bin", async () => {
-    const response = await request(app).get("/b/8");
-
-    // Is the status code 404
+  it("Should return an error", async () => {
+    const response = await request(app).get("/api/statistic/1234");
+    expect.assertions(2);
+    // are tasks equal
     expect(response.status).toBe(404);
+    expect(response.body).toBe("Shortener URL does not exist");
+  });
+});
 
-    // Is the body equal to the error
-    expect(response.body.message).toBe("Bin not found");
+describe("Redirect", () => {
+  it("Should redirect to the wanted page", async () => {
+    const response = await request(app).get("/vnFthnWBJ");
+    // are tasks equal
+    expect(response.headers.location).toBe(expectedURL.url);
+  });
+
+  it("Should return an error", async () => {
+    const response = await request(app).get("/1234");
+    expect.assertions(2);
+    // are tasks equal
+    expect(response.status).toBe(404);
+    expect(response.body).toBe("Shortener URL does not exist");
   });
 });

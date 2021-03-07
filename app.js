@@ -5,6 +5,8 @@ const DataBase = require("./database");
 const returnProperty = require("./urlFinder");
 const shortid = require("shortid");
 const bodyParser = require("body-parser");
+const { response } = require("express");
+const { default: urlExistDeep } = require("url-exists-deep");
 const app = express();
 const DB = new DataBase();
 
@@ -27,7 +29,7 @@ app.get("/api/statistic/:shorturlId", (req, res) => {
     let binContent = result.flat(2);
     DB.existBin(shorturlId, binContent).then((exist) => {
       if (!exist) {
-        res.send("Shortener URL does not exist");
+        res.status(404).json("Shortener URL does not exist");
       } else {
         let urlExist = returnProperty(shorturlId, binContent);
         console.log("already exist");
@@ -38,39 +40,45 @@ app.get("/api/statistic/:shorturlId", (req, res) => {
 });
 app.post("/api/shorturl/new/", (req, res) => {
   try {
-    DB.getBin().then((bin) => {
+    DB.getBin().then(async (bin) => {
       let result = [bin];
       let binContent = result.flat(2);
-      let url = req.body.url;
-      console.log(req.body);
-      if (!url.includes("https://") || !url.includes("http://")) {
+      let { url } = req.body;
+      if (!DB.includesHTTP(url)) {
         url = "http://" + url;
       }
-      DB.existBin(url, binContent).then((exist) => {
-        if (!exist) {
-          let newUrl = {
-            originalUrl: url,
-            shorturlId: shortid.generate(),
-            creationDate: new Date()
-              .toISOString()
-              .slice(0, 19)
-              .replace("T", " "),
-            redirectCount: 0,
-          };
-          console.log("putting new");
-          binContent.push(newUrl);
-          DB.putBin(binContent);
-          res.json(newUrl);
+      urlExistDeep(url).then((exists) => {
+        if (exists) {
+          DB.existBin(url, binContent).then((exist) => {
+            if (!exist) {
+              let newUrl = {
+                originalUrl: url,
+                shorturlId: shortid.generate(),
+                creationDate: new Date()
+                  .toISOString()
+                  .slice(0, 19)
+                  .replace("T", " "),
+                redirectCount: 0,
+              };
+              console.log("putting new");
+              binContent.push(newUrl);
+              DB.putBin(binContent);
+              res.json(newUrl);
+            } else {
+              let urlExist = returnProperty(url, binContent);
+              console.log("already exist");
+              console.log(urlExist);
+              res.json(urlExist);
+            }
+          });
         } else {
-          let urlExist = returnProperty(url, binContent);
-          console.log("already exist");
-          console.log(urlExist);
-          res.json(urlExist);
+          res.status(401).json("URL is not valid");
         }
       });
     });
   } catch (err) {
     console.error("Something want wrong with your request");
+    res.status(500).json("Something want wrong with your request");
   }
 });
 
@@ -81,7 +89,7 @@ app.get("/:shortUrl", (req, res) => {
     let binContent = result.flat(2);
     DB.existBin(shortUrl, binContent).then((exist) => {
       if (!exist) {
-        res.send("Shortener URL not exist");
+        res.status(404).json("Shortener URL does not exist");
       } else {
         let urlExist = returnProperty(shortUrl, binContent);
         console.log("already exist");

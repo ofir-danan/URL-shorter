@@ -5,59 +5,60 @@
     <title>URL Shortener</title>
     <link rel="icon" type="image/png" href="../public/favicon.ico" />
     <link href="../public/style.css" rel="stylesheet" type="text/css" />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-      crossorigin="anonymous"
-    />
+      
   </head>
   <body>
     <div class="container">
+      <video src="../public/background-video.mp4" autoplay loop playsinline muted></video>
       <h1>URL Shortener</h1>
+      <h2>We take your long, unreadable URL links, and just make them shorter!</h2>
+      <h3>All you need to do is insert your URL below and wait for the new one!</h3>
       <main>
         <section>
-          <form onsubmit="onSubmit(event)" action="javascript:void(0)" class="my-4 form-inline">
-            <fieldset>
-              <legend>URL Shortener</legend>
-              <label for="url_input" class="sr-only">URL:</label>
+          <form onsubmit="onSubmit(event)" action="javascript:void(0)">
               <input
                 id="url_input"
                 type="text"
                 name="url"
-                placeholder="https://www.freecodecamp.org/"
-                class="form-control col mr-2"
+                placeholder="Please insert your URL here.."
+                onfocus="if(value=='') value = 'http:/'+ '/'"
+                style="display: inline-block;"
                 required
-              />
-              <input type="submit" value="POST URL" class="btn btn-success" />
-            </fieldset>
+              /> <br>
+              <input type="submit" value="cut me" class="myButton"/>
           </form>
+          <div class="lds-ripple"><div></div><div></div></div>
         </section>
-      </main>
-      <section id="output" style="display: none;">
-        <label for="shortenerURL"> New Url :  <a id="shortenerURL"></a></label>
-        <label for="fullURL"> Full Url :  <a id="fullURL"></a></label>
-          <button id="statistic">Statistics</button>
-          <!-- The Modal -->
-          <div id="myModal" class="modal">
-          <!-- Modal content -->
+        <section id="output" style="display: none;">
+          <label for="shortenerURL"> New Url :  <a id="shortenerURL"></a></label> <br>
+          <label for="fullURL"> Full Url :  <a id="fullURL"></a></label> <br>
+            <button id="statistic" class="myButton">Statistics</button>
+            <!-- The Modal -->
+            <div id="myModal" class="modal">
+            <!-- Modal content -->
             <div class="modal-content">
               <span class="close">&times;</span>
-              <div>The new URL was clicked : <span id="redirectCount"></span> times</div>
-              <div>The new URL was crated at : <span id="creationDate"></span> </div>
-              <div>The new URL : <span id="newUrl"></span></div>
-              <div>The full URL : <span id="urlBeforeChange"></span> </div>
+              <div class="lds-ripple"><div></div><div></div></div>
+                <div id="modal-output" style="display: none;">
+                  <div>The new URL was clicked : <span id="redirectCount"></span> times</div>
+                  <div>The new URL was crated at : <span id="creationDate"></span> </div>
+                  <div>The new URL : <span id="newUrl"></span></div>
+                  <div>The full URL : <span id="urlBeforeChange"></span> </div>
+                </div>
+              </div>
             </div>
-          </div>
-      </section>
+        </section>
+      </main>
     </div>
     <script>
       const outputDiv = document.getElementById("output")
       const shortOutput = document.getElementById("shortenerURL");
       const fullOutput = document.getElementById("fullURL");
+      const spinner = document.querySelector(".lds-ripple")
       function onSubmit(e) {
         e.preventDefault();
         const url = document.getElementById("url_input").value;
+        spinner.style.display = "inline-block"
         fetch(`http://localhost:3000/api/shorturl/new`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -67,6 +68,7 @@
             return res.json();
           })
           .then((value) => {
+            spinner.style.display = "none"
             shortOutput.setAttribute(
               "href",
               `${window.location}${value.shorturlId}`
@@ -84,6 +86,6 @@
           .catch((err) => (shortOutput.innerText = err));
       }
     </script>
-    <script src="./main.js"></script>
+    <script src="../public/main.js"></script>
   </body>
 </html>

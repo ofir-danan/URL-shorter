@@ -28,6 +28,14 @@ class DataBase {
       }
     });
   }
+
+  includesHTTP(url) {
+    if (url.includes("https://") || url.includes("http://")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 const isArrayContains = function (value, array) {

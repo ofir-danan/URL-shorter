@@ -20,30 +20,58 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
-app.post("/api/shorturl/new/", (req, res) => {
+app.get("/api/statistic/:shorturlId", (req, res) => {
+  const { shorturlId } = req.params;
   DB.getBin().then((bin) => {
     let result = [bin];
     let binContent = result.flat(2);
-    DB.existBin(req.body.url, binContent).then((exist) => {
+    DB.existBin(shorturlId, binContent).then((exist) => {
       if (!exist) {
-        let newUrl = {
-          originalUrl: req.body.url,
-          shorturlId: shortid.generate(),
-          creationDate: new Date().toISOString().slice(0, 19).replace("T", " "),
-          redirectCount: 0,
-        };
-        console.log("putting new");
-        binContent.push(newUrl);
-        DB.putBin(binContent);
-        res.json(newUrl);
+        res.send("Shortener URL does not exist");
       } else {
-        let urlExist = returnProperty(req.body.url, binContent);
+        let urlExist = returnProperty(shorturlId, binContent);
         console.log("already exist");
-        console.log(urlExist);
         res.json(urlExist);
       }
     });
   });
+});
+app.post("/api/shorturl/new/", (req, res) => {
+  try {
+    DB.getBin().then((bin) => {
+      let result = [bin];
+      let binContent = result.flat(2);
+      let url = req.body.url;
+      console.log(req.body);
+      if (!url.includes("https://") || !url.includes("http://")) {
+        url = "http://" + url;
+      }
+      DB.existBin(url, binContent).then((exist) => {
+        if (!exist) {
+          let newUrl = {
+            originalUrl: url,
+            shorturlId: shortid.generate(),
+            creationDate: new Date()
+              .toISOString()
+              .slice(0, 19)
+              .replace("T", " "),
+            redirectCount: 0,
+          };
+          console.log("putting new");
+          binContent.push(newUrl);
+          DB.putBin(binContent);
+          res.json(newUrl);
+        } else {
+          let urlExist = returnProperty(url, binContent);
+          console.log("already exist");
+          console.log(urlExist);
+          res.json(urlExist);
+        }
+      });
+    });
+  } catch (err) {
+    console.error("Something want wrong with your request");
+  }
 });
 
 app.get("/:shortUrl", (req, res) => {
@@ -57,14 +85,12 @@ app.get("/:shortUrl", (req, res) => {
       } else {
         let urlExist = returnProperty(shortUrl, binContent);
         console.log("already exist");
-        console.log(typeof urlExist.originalUrl);
-        if (urlExist.originalUrl.includes("https://")) {
-          return res.redirect(urlExist.originalUrl);
-        } else if (urlExist.originalUrl.includes("http://")) {
-          return res.redirect(urlExist.originalUrl);
-        } else {
-          return res.redirect(`http://${urlExist.originalUrl}`);
-        }
+        binContent.forEach((element) => {
+          if (element.shorturlId === shortUrl) {
+            element.redirectCount++;
+          }
+        });
+        DB.putBin(binContent).then(() => res.redirect(urlExist.originalUrl));
       }
     });
   });

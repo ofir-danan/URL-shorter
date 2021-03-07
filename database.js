@@ -1,22 +1,26 @@
+require("dotenv").config();
 const axios = require("axios");
-const BIN_URL = "https://api.jsonbin.io/b/603fb1b30866664b1087fd97";
+const BIN_URI =
+  process.env.NODE_ENV === "test"
+    ? process.env.DB_TEST_URI
+    : process.env.DB_URI;
 
 class DataBase {
   getBin() {
-    return axios.get(`${BIN_URL}/latest`).then((res) => {
+    return axios.get(`${BIN_URI}/latest`).then((res) => {
       return res.data;
     });
   }
 
   putBin(array) {
     return axios
-      .put(BIN_URL, array)
+      .put(BIN_URI, array)
       .then((res) => console.log(res.data.data))
       .catch((err) => console.error(err));
   }
 
   existBin(url, bin) {
-    return axios.get(`${BIN_URL}/latest`).then((res) => {
+    return axios.get(`${BIN_URI}/latest`).then((res) => {
       if (isArrayContains(url, bin)) {
         return true;
       } else {

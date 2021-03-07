@@ -27,22 +27,38 @@
                 name="url"
                 placeholder="https://www.freecodecamp.org/"
                 class="form-control col mr-2"
+                required
               />
               <input type="submit" value="POST URL" class="btn btn-success" />
             </fieldset>
           </form>
         </section>
       </main>
-      <div> New Url :  <a id="shortenerURL"></a></div>
-      <div> Full Url :  <a id="fullURL"></a></div>
+      <section id="output" style="display: none;">
+        <label for="shortenerURL"> New Url :  <a id="shortenerURL"></a></label>
+        <label for="fullURL"> Full Url :  <a id="fullURL"></a></label>
+          <button id="statistic">Statistics</button>
+          <!-- The Modal -->
+          <div id="myModal" class="modal">
+          <!-- Modal content -->
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <div>The new URL was clicked : <span id="redirectCount"></span> times</div>
+              <div>The new URL was crated at : <span id="creationDate"></span> </div>
+              <div>The new URL : <span id="newUrl"></span></div>
+              <div>The full URL : <span id="urlBeforeChange"></span> </div>
+            </div>
+          </div>
+      </section>
     </div>
     <script>
+      const outputDiv = document.getElementById("output")
       const shortOutput = document.getElementById("shortenerURL");
       const fullOutput = document.getElementById("fullURL");
       function onSubmit(e) {
         e.preventDefault();
         const url = document.getElementById("url_input").value;
-        fetch("http://localhost:3000/api/shorturl/new", {
+        fetch(`http://localhost:3000/api/shorturl/new`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url }),
@@ -53,20 +69,21 @@
           .then((value) => {
             shortOutput.setAttribute(
               "href",
-              `http://localhost:3000/${value.shorturlId}`
+              `${window.location}${value.shorturlId}`
             );
-            shortOutput.innerText = "http://localhost:3000/" + value.shorturlId;
-            if (value.originalUrl.includes("https://")) {
+            shortOutput.innerText = window.location + value.shorturlId;
+            if (value.originalUrl.includes("https://")||value.originalUrl.includes("http://")) {
               fullOutput.setAttribute("href", value.originalUrl);
-            } else if (value.originalUrl.includes("http://")) {
-              fullOutput.setAttribute("href", value.originalUrl);
-            } else {
+              fullOutput.innerText = value.originalUrl;
+            }  else {
               fullOutput.setAttribute("href", `http://${value.originalUrl}`);
+              fullOutput.innerText = "http://"+value.originalUrl;
             }
-            fullOutput.innerText = value.originalUrl;
+            outputDiv.style.display = "block"
           })
           .catch((err) => (shortOutput.innerText = err));
       }
     </script>
+    <script src="./main.js"></script>
   </body>
 </html>

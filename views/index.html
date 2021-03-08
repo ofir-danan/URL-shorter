@@ -4,30 +4,88 @@
   <head>
     <title>URL Shortener</title>
     <link rel="icon" type="image/png" href="../public/favicon.ico" />
-    <link href="./public/style.css" rel="stylesheet" type="text/css" />
+    <link href="../public/style.css" rel="stylesheet" type="text/css" />
+      
   </head>
-
   <body>
-    <h1>URL Shortener Microservice</h1>
-    <main>
-      <section>
-        <form action="api/shorturl/new" method="POST">
-          <fieldset>
-            <legend>URL Shortener</legend>
-            <label for="url_input">URL:</label>
-            <input
-              id="url_input"
-              type="text"
-              name="url"
-              placeholder="https://www.freecodecamp.org/"
-            />
-            <input type="submit" value="POST URL" />
-          </fieldset>
-        </form>
-      </section>
-    </main>
-    <footer>
-      <p>By <a href="https://www.freecodecamp.org/">freeCodeCamp</a></p>
-    </footer>
+    <div class="container">
+      <video src="../public/background-video.mp4" autoplay webkit-playsinline loop playsinline muted id="video"></video>
+      <h1>URL Shortener</h1>
+      <h2>We take your long, unreadable URL links, and just make them shorter!</h2>
+      <h3>All you need to do is insert your URL below and wait for the new one!</h3>
+      <main>
+        <section>
+          <form onsubmit="onSubmit(event)" action="javascript:void(0)">
+              <input
+                id="url_input"
+                type="text"
+                name="url"
+                placeholder="Please insert your URL here.."
+                onfocus="if(value=='') value = 'http:/'+ '/'"
+                style="display: inline-block;"
+                required
+              /> <br>
+              <input type="submit" value="cut me" class="myButton"/>
+          </form>
+          <div class="lds-ripple"><div></div><div></div></div>
+        </section>
+        <section id="output" style="display: none;">
+          <label for="shortenerURL"> New Url :  <a id="shortenerURL"></a></label> <br>
+          <label for="fullURL"> Full Url :  <a id="fullURL"></a></label> <br>
+            <button id="statistic" class="myButton">Statistics</button>
+            <!-- The Modal -->
+            <div id="myModal" class="modal">
+            <!-- Modal content -->
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <div class="lds-ripple"><div></div><div></div></div>
+                <div id="modal-output" style="display: none;">
+                  <div>The new URL was clicked : <span id="redirectCount"></span> times</div>
+                  <div>The new URL was crated at : <span id="creationDate"></span> </div>
+                  <div>The new URL : <span id="newUrl"></span></div>
+                  <div>The full URL : <span id="urlBeforeChange"></span> </div>
+                </div>
+              </div>
+            </div>
+        </section>
+      </main>
+    </div>
+    <script>
+      const outputDiv = document.getElementById("output")
+      const shortOutput = document.getElementById("shortenerURL");
+      const fullOutput = document.getElementById("fullURL");
+      const spinner = document.querySelector(".lds-ripple")
+      function onSubmit(e) {
+        e.preventDefault();
+        const url = document.getElementById("url_input").value;
+        spinner.style.display = "inline-block"
+        fetch(`http://localhost:3000/api/shorturl/new`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        })
+          .then((res) => {
+            return res.json();
+          })
+          .then((value) => {
+            spinner.style.display = "none"
+            shortOutput.setAttribute(
+              "href",
+              `${window.location}${value.shorturlId}`
+            );
+            shortOutput.innerText = window.location + value.shorturlId;
+            if (value.originalUrl.includes("https://")||value.originalUrl.includes("http://")) {
+              fullOutput.setAttribute("href", value.originalUrl);
+              fullOutput.innerText = value.originalUrl;
+            }  else {
+              fullOutput.setAttribute("href", `http://${value.originalUrl}`);
+              fullOutput.innerText = "http://"+value.originalUrl;
+            }
+            outputDiv.style.display = "block"
+          })
+          .catch((err) => (shortOutput.innerText = err));
+      }
+    </script>
+    <script src="../public/main.js"></script>
   </body>
 </html>

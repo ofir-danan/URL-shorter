@@ -41,7 +41,7 @@ describe("POST route", () => {
       .send(notRealURL);
     expect.assertions(2);
     // Is the status code 401
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(400);
 
     // Is the error massage the same
     expect(response.body).toEqual("URL is not valid");
@@ -53,6 +53,9 @@ describe("Statistic route", () => {
     expectedJSON.redirectCount = 4;
     await DB.putBin([expectedJSON]);
     const response = await request(app).get("/api/statistic/vnFthnWBJ");
+    expect.assertions(2);
+    // is not bad request
+    expect(response.status).not.toBe(400);
     // are statistic equal after they changed
     expect(response.body).toEqual(expectedJSON);
   });
@@ -69,6 +72,9 @@ describe("Statistic route", () => {
 describe("Redirect", () => {
   it("Should redirect to the wanted page", async () => {
     const response = await request(app).get("/vnFthnWBJ");
+    expect.assertions(2);
+    // is not bad request
+    expect(response.status).not.toBe(400);
     // Is redirect works
     expect(response.headers.location).toBe(expectedURL.url);
   });

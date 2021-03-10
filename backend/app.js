@@ -25,19 +25,23 @@ app.get("/", (req, res) => {
 // json page with statistics
 app.get("/api/statistic/:shorturlId", (req, res) => {
   const { shorturlId } = req.params;
-  DB.getBin().then((bin) => {
-    let result = [bin];
-    let binContent = result.flat(2); // to keep out extra "[]" inside the array
-    DB.existBin(shorturlId, binContent).then((exist) => {
-      if (!exist) {
-        alert("Shortener URL does not exist");
-        res.status(404).json("Shortener URL does not exist");
-      } else {
-        let urlExist = returnProperty(shorturlId, binContent);
-        res.json(urlExist);
-      }
+  try {
+    DB.getBin().then((bin) => {
+      let result = [bin];
+      let binContent = result.flat(2); // to keep out extra "[]" inside the array
+      DB.existBin(shorturlId, binContent).then((exist) => {
+        if (!exist) {
+          alert("Shortener URL does not exist");
+          res.status(404).json("Shortener URL does not exist");
+        } else {
+          let urlExist = returnProperty(shorturlId, binContent);
+          res.json(urlExist);
+        }
+      });
     });
-  });
+  } catch {
+    res.status(400).json("Bad request");
+  }
 });
 
 //adding or getting shortener URLs
@@ -75,7 +79,7 @@ app.post("/api/shorturl/new/", (req, res) => {
           });
         } else {
           alert("URL is not valid");
-          res.status(401).json("URL is not valid");
+          res.status(400).json("URL is not valid");
         }
       });
     });
@@ -89,24 +93,28 @@ app.post("/api/shorturl/new/", (req, res) => {
 //redirect to original URL
 app.get("/:shortUrl", (req, res) => {
   const { shortUrl } = req.params;
-  DB.getBin().then((bin) => {
-    let result = [bin];
-    let binContent = result.flat(2);
-    DB.existBin(shortUrl, binContent).then((exist) => {
-      if (!exist) {
-        alert("Shortener URL does not exist");
-        res.status(404).json("Shortener URL does not exist");
-      } else {
-        let urlExist = returnProperty(shortUrl, binContent);
-        binContent.forEach((element) => {
-          if (element.shorturlId === shortUrl) {
-            element.redirectCount++;
-          }
-        });
-        DB.putBin(binContent).then(() => res.redirect(urlExist.originalUrl));
-      }
+  try {
+    DB.getBin().then((bin) => {
+      let result = [bin];
+      let binContent = result.flat(2);
+      DB.existBin(shortUrl, binContent).then((exist) => {
+        if (!exist) {
+          alert("Shortener URL does not exist");
+          res.status(404).json("Shortener URL does not exist");
+        } else {
+          let urlExist = returnProperty(shortUrl, binContent);
+          binContent.forEach((element) => {
+            if (element.shorturlId === shortUrl) {
+              element.redirectCount++;
+            }
+          });
+          DB.putBin(binContent).then(() => res.redirect(urlExist.originalUrl));
+        }
+      });
     });
-  });
+  } catch {
+    res.status(400).json("Bad request");
+  }
 });
 
 module.exports = app;
